@@ -12,6 +12,10 @@ const server = http.createServer((request, response) => {
     response.writeHead(acceptingTraffic ? 200 : 503, { 'content-type': 'application/json' });
     return response.end(JSON.stringify({ ready: acceptingTraffic }));
   }
+  if (request.url === '/slow') {
+    response.writeHead(200, { 'content-type': 'text/plain' });
+    return setTimeout(() => response.end('drained'), 100);
+  }
   response.writeHead(404, { 'content-type': 'application/json' });
   response.end(JSON.stringify({ error: 'not_found' }));
 });

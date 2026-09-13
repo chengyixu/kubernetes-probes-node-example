@@ -23,7 +23,14 @@ try {
   await waitForReady();
   assert.equal((await fetch(`http://127.0.0.1:${port}/healthz`)).status, 200);
   assert.equal((await fetch(`http://127.0.0.1:${port}/readyz`)).status, 200);
+
+  const drainingRequest = fetch(`http://127.0.0.1:${port}/slow`);
+  await new Promise(resolve => setTimeout(resolve, 25));
   child.kill('SIGTERM');
+  const drainingResponse = await drainingRequest;
+  assert.equal(drainingResponse.status, 200);
+  assert.equal(await drainingResponse.text(), 'drained');
+  await assert.rejects(fetch(`http://127.0.0.1:${port}/readyz`));
   await new Promise(resolve => child.once('exit', resolve));
   assert.equal(child.exitCode, 0);
   console.log('probe contract: PASS');
